@@ -1,7 +1,10 @@
-import React, { useContext } from "react";
-import { Grid, Typography, Paper } from "@material-ui/core";
+import React, { useContext, useState } from "react";
+import { Grid, Typography, Paper, Button, Box } from "@material-ui/core";
+import VideocamOutlinedIcon from "@material-ui/icons/VideocamOutlined";
+import VideocamOffOutlinedIcon from "@material-ui/icons/VideocamOffOutlined";
 import { makeStyles } from "@material-ui/core/styles";
 import { SocketContext } from "../SocketContext";
+import { MicOff } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
   video: {
@@ -29,10 +32,29 @@ const VideoPlayer = () => {
     useContext(SocketContext);
   const classes = useStyles();
 
+  const [mutedAudio, setMutedAudio] = useState(true);
+  const [playingVideo, setPlayingVideo] = useState(true);
+
+  const startVideo = () => {
+    setPlayingVideo(true);
+    navigator.getUserMedia(
+      { video: true },
+      (stream) => {
+        myVideo.current.srcObject = stream;
+      },
+      (err) => console.log(err)
+    );
+  };
+
+  const stopVideo = () => {
+    setPlayingVideo(false);
+    myVideo.current.srcObject.getVideoTracks()[0].stop();
+  };
+
   return (
     <Grid container className={classes.gridContainer}>
       {stream && (
-          /******************           Our own video           ************************/
+        /******************           Our own video           ************************/
         <Paper className={classes.paper}>
           <Grid item xs={12} md={6}>
             <Typography variant="h5" gutterBottom>
@@ -44,12 +66,41 @@ const VideoPlayer = () => {
               ref={myVideo}
               autoPlay
               className={classes.video}
+              id="ourVideo"
             />
           </Grid>
+          <Box sx={{ display: "flex", justifyContent: "space-evenly" }}>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<MicOff fontSize="large" />}
+            >
+              Turn Off Audio
+            </Button>
+            {playingVideo ? (
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<VideocamOffOutlinedIcon fontSize="large" />}
+                onClick={stopVideo}
+              >
+                Turn Off Video
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<VideocamOutlinedIcon fontSize="large" />}
+                onClick={startVideo}
+              >
+                Turn On Video
+              </Button>
+            )}
+          </Box>
         </Paper>
       )}
       {callAccepted && !callEnded && (
-          /*******************          User's video           ************************/
+        /*******************          User's video           ************************/
         <Paper className={classes.paper}>
           <Grid item xs={12} md={6}>
             <Typography variant="h5" gutterBottom>
